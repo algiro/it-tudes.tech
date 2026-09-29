@@ -1,0 +1,59 @@
+---
+import { render } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import Gallery from "../../../components/Gallery.astro";
+import { getProjects, repoLabelKey, type Project } from "../../../lib/projects";
+import { langs, langParam, localePath, useT } from "../../../i18n/utils";
+import { site, copy, type Lang } from "../../../../content/site";
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const lang of langs) {
+    for (const project of await getProjects(lang)) {
+      paths.push({ params: { lang: langParam(lang), id: project.slug }, props: { lang, project } });
+    }
+  }
+  return paths;
+}
+
+const { lang, project } = Astro.props as { lang: Lang; project: Project };
+const t = useT(lang);
+const { title, summary, kind, year, tags, link, linkLabel, repo, draft } = project.data;
+const { Content } = await render(project.body);
+const bodyLang = project.body.id.split("/").pop();
+---
+<Base lang={lang} title={title} description={summary} image={project.gallery[0]?.src.src}>
+  <div class="container layout">
+    <main class="article">
+      <a class="back" href={`${localePath(lang, "/")}#projects`}>{t("project.back")}</a>
+      <h1 lang={project.lang !== lang ? project.lang : undefined}>{title}</h1>
+      <p class="lede" lang={project.lang !== lang ? project.lang : undefined}>{summary}</p>
+      <Gallery images={project.gallery} lang={lang} label={title} />
+      {bodyLang !== lang && <p class="note">{t("project.untranslated")}</p>}
+      <div class="prose" lang={bodyLang !== lang ? bodyLang : undefined}><Content /></div>
+    </main>
+
+    <aside class="side">
+      <section class="box" aria-labelledby="facts-t">
+        <h2 id="facts-t">{t("project.facts")}</h2>
+        <dl class="facts">
+          {draft && <><dt>{t("project.status")}</dt><dd><span class="badge draft">{t("draft.long")}</span></dd></>}
+          {kind && <><dt>{t("project.type")}</dt><dd>{kind}</dd></>}
+          {year && <><dt>{t("project.year")}</dt><dd>{year}</dd></>}
+          {tags.length > 0 && <><dt>{t("project.stack")}</dt><dd>{tags.join(", ")}</dd></>}
+        </dl>
+        {(link || repo) && (
+          <div class="row">
+            {link && <a class="btn" href={link} target="_blank" rel="noopener">{linkLabel ?? t("project.visit")} ↗</a>}
+            {repo && <a class:list={["btn", link && "ghost"]} href={repo} target="_blank" rel="noopener">{t(repoLabelKey(repo))} ↗</a>}
+          </div>
+        )}
+      </section>
+      <section class="box" aria-labelledby="contact-t">
+        <h2 id="contact-t">{t("project.similar")}</h2>
+        <p>{copy[lang].contactText}</p>
+        <p><a class="mail" href={`mailto:${site.email}`}>{site.email}</a></p>
+      </section>
+    </aside>
+  </div>
+</Base>

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+
+# Server specifics for tools/deploy.sh (see tools/deploy.local.env.example)
+tools/deploy.local.env
+# Local editor/agent settings
+.claude/

@@ -10,7 +10,7 @@ content/projects/<name>/   one folder per project: en.md, es.md, it.md and its o
 src/i18n/ui.ts             interface labels in each language (menu, buttons, headings)
 src/                       layout, components, styles (src/styles/global.css holds the colours)
 public/                    copied as-is (favicon, robots.txt)
-deploy/, tools/            nginx block and deploy scripts for he-it-tudes
+deploy/, tools/            nginx block and deploy scripts (server details in tools/deploy.local.env)
 Resources/logo-drafts/     logo sources (the site uses the horizontal duo-dark variant)
 ```
 
@@ -36,7 +36,7 @@ If you rename or move project folders while `npm run dev` is running, restart it
 ## Projects
 
 Each project is a folder in `content/projects/`. The folder name becomes the address:
-`tradeecho-gateway/` → `/projects/tradeecho-gateway/`, `/es/projects/tradeecho-gateway/`, …
+`ninvoices/` → `/projects/ninvoices/`, `/es/projects/ninvoices/`, …
 
 ```
 content/projects/ninvoices/
@@ -128,33 +128,36 @@ To add a language: add it to `languages` and `copy` in `content/site.ts`, to `ui
 
 ## Deploy
 
-The site is served by the shared gateway container `ninvoices-nginx-prod` on
-**he-it-tudes** (91.98.81.44, hostname `ubuntu-8gb-fsn1-1`), next to nInvoices, ChefNet,
-Aislescope, Keycloak and Seq, which keep their own paths.
+The site is served by an existing nginx proxy container on the server, next to other apps
+that keep their own paths. Server specifics (ssh alias, hostname, paths, container, the
+other apps to check) live in `tools/deploy.local.env`, which is git-ignored. Start from
+`tools/deploy.local.env.example`.
 
 ```powershell
 .\tools\deploy.ps1 -DryRun   # build and show what would change
 .\tools\deploy.ps1           # build and publish
 ```
 
-Each deploy uploads a new release to `~/sites/it-tudes/releases/<timestamp>` and switches
-the `current` symlink: atomic, no restart, no sudo. The last 5 releases are kept, and the
-script prints the one-line rollback command.
+Each deploy uploads a new release to `$REMOTE_BASE/releases/<timestamp>` and switches the
+`current` symlink: atomic, no restart, no sudo. The last 5 releases are kept, and the
+script prints the one-line rollback command. It refuses to run if the server's hostname is
+not `EXPECTED_HOST`.
 
 ### First time only
 
-After the first `deploy.ps1`, run the one-time server setup. It restarts the shared nginx
-container (a few seconds of downtime for every app on the box), so pick a quiet moment:
+After the first `deploy.ps1`, run the one-time server setup (`deploy.ps1` prints the exact
+command). It recreates the shared nginx container, a few seconds of downtime for every app
+behind it, so pick a quiet moment:
 
 ```powershell
-wsl bash -c 'ssh he-it-tudes "bash ~/sites/it-tudes-setup/setup-server.sh install"'
+wsl bash -c 'ssh <SSH_HOST> "bash <REMOTE_SETUP>/setup-server.sh install"'
 ```
 
-It backs up `~/docker/docker-compose.yml` and `~/docker/nginx.prod.conf`, mounts the site
-into the gateway, replaces the old `/ → /nInvoices/` redirect with
-`deploy/it-tudes-site.nginx.conf`, validates with `nginx -t`, recreates the gateway and
-checks the site plus every other app. If any check fails it restores the backup by itself.
-`setup-server.sh rollback` undoes it by hand; `setup-server.sh check` just runs the checks.
+It backs up the proxy's compose file and nginx config, mounts the site into the proxy,
+replaces the proxy's `location = / { return 30x …; }` redirect with
+`deploy/it-tudes-site.nginx.conf`, validates with `nginx -t`, recreates the proxy and checks
+the site plus every app in `OTHER_CHECKS`. If any check fails it restores the backup by
+itself. `setup-server.sh rollback` undoes it by hand; `setup-server.sh check` just runs the
+checks.
 
-Paths the site must never use, because other apps own them: `/admin`, `/assets`,
-`/realms`, `/resources`, `/seq`, `/nInvoices`, `/chefnet`, `/aislescope`, `/health`.
+Never create site pages under a path another app on the proxy owns.

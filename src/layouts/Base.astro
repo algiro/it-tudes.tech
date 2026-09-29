@@ -1,0 +1,77 @@
+---
+import "@fontsource/ibm-plex-sans/400.css";
+import "@fontsource/ibm-plex-sans/500.css";
+import "@fontsource/ibm-plex-sans/600.css";
+import "@fontsource/ibm-plex-sans/700.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/600.css";
+import "../styles/global.css";
+import Logo from "../components/Logo.astro";
+import { site, copy, languages, defaultLang, type Lang } from "../../content/site";
+import { langs, localePath, stripLang, useT, ogLocale } from "../i18n/utils";
+
+interface Props { lang: Lang; title?: string; description?: string; image?: string; noAlternates?: boolean }
+const { lang, title, description = copy[lang].description, image, noAlternates = false } = Astro.props;
+const t = useT(lang);
+const home = localePath(lang, "/");
+const nav = [
+  { label: t("nav.services"), href: `${home}#services` },
+  { label: t("nav.projects"), href: `${home}#projects` },
+  { label: t("nav.approach"), href: `${home}#approach` },
+  { label: t("nav.about"), href: `${home}#about` },
+  { label: t("nav.contact"), href: `${home}#contact` },
+];
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · ${t("title.tagline")}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const basePath = stripLang(Astro.url.pathname);
+const alternates = langs.map((l) => ({ lang: l, href: localePath(l, basePath) }));
+const year = new Date().getFullYear();
+---
+<!doctype html>
+<!-- data-site: the deploy scripts check for it to confirm this site is the one being served -->
+<html lang={lang} data-site="it-tudes">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  {!noAlternates && alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={new URL(a.href, Astro.site)} />)}
+  {!noAlternates && <link rel="alternate" hreflang="x-default" href={new URL(localePath(defaultLang, basePath), Astro.site)} />}
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="sitemap" href="/sitemap-index.xml" />
+  <meta name="theme-color" content="#0E1320" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content={site.name} />
+  <meta property="og:locale" content={ogLocale[lang]} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  {image && <meta property="og:image" content={new URL(image, Astro.site)} />}
+</head>
+<body>
+  <a class="skip" href="#main">{t("skip")}</a>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a href={home} class="brand" aria-label={`${site.name} ${t("home")}`}><Logo height={30} /></a>
+      <nav class="menu" aria-label="Main">
+        <ul>{nav.map((n) => <li><a href={n.href}>{n.label}</a></li>)}</ul>
+      </nav>
+      {!noAlternates && (
+        <nav class="langs" aria-label={t("nav.language")}>
+          {alternates.map((a) => (
+            <a href={a.href} hreflang={a.lang} lang={a.lang} title={languages[a.lang]} aria-current={a.lang === lang ? "true" : undefined}>{a.lang.toUpperCase()}</a>
+          ))}
+        </nav>
+      )}
+    </div>
+  </header>
+  <div id="main"><slot /></div>
+  <footer class="foot">
+    <div class="container foot-inner">
+      <span>© {year} {site.legalName || site.name}{site.vatId && ` · ${t("vat")} ${site.vatId}`}</span>
+      <span><a href={`mailto:${site.email}`}>{site.email}</a> · {site.domain}</span>
+    </div>
+  </footer>
+</body>
+</html>

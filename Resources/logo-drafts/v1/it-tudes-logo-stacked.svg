@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 150" role="img" aria-label="IT-Tudes">
+  <title>IT-Tudes</title>
+  <g transform="translate(100 0)"><g id="mark">
+    <polygon points="8,30 40,11.5 72,30 40,48.5" fill="#1D4ED8"/>
+    <polygon points="8,36 40,54.5 72,36 72,44 40,62.5 8,44" fill="#3B82F6"/>
+    <polygon points="8,50 40,68.5 72,50 72,58 40,76.5 8,58" fill="#93C5FD"/>
+  </g></g>
+  <g transform="translate(-89 70)"><g id="wordmark" fill="none" stroke-width="7" stroke-linecap="butt" stroke-linejoin="round">
+    <g stroke="#0F172A">
+      <path d="M103.5 22V66"/>
+      <path d="M115 25.5H145M130 29V66"/>
+      <path d="M175 25.5H205M190 29V66"/>
+      <path d="M212.5 34V53.5A12.5 12.5 0 0 0 237.5 53.5V34M237.5 34V66"/>
+      <circle cx="266" cy="50" r="12.5"/>
+      <path d="M278.5 22V66"/>
+      <path d="M294.5 50H319.5A12.5 12.5 0 1 0 316.6 58"/>
+      <path d="M352.5 37.5H340.75A6.25 6.25 0 0 0 340.75 50H348.25A6.25 6.25 0 0 1 348.25 62.5H336.5"/>
+    </g>
+    <path d="M153 50H167" stroke="#2563EB"/>
+  </g></g>
+</svg>

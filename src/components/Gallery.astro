@@ -1,0 +1,127 @@
+---
+// Project images on the detail page. One image: a plain cover. Several: a carousel.
+// Without JavaScript the carousel is a swipeable, scroll-snapping strip; the script adds
+// previous/next buttons, dots, arrow keys and autoplay (every AUTOPLAY_MS, looping, with a
+// pause button; it also pauses on hover, keyboard focus and hidden tabs, and starts paused
+// when the visitor prefers reduced motion). Each image links to its full-size file.
+import { Image } from "astro:assets";
+import type { GalleryImage } from "../lib/projects";
+import { useT } from "../i18n/utils";
+import type { Lang } from "../../content/site";
+
+interface Props { images: GalleryImage[]; lang: Lang; label: string }
+const { images, lang, label } = Astro.props;
+const t = useT(lang);
+const slideLabel = (n: number) => t("gallery.slide").replace("{n}", String(n)).replace("{total}", String(images.length));
+const multi = images.length > 1;
+const AUTOPLAY_MS = 5000;
+---
+{images.length > 0 && (
+  <div class="cover gallery" data-gallery={multi ? "" : undefined} data-interval={multi ? AUTOPLAY_MS : undefined} role={multi ? "region" : undefined}
+    aria-roledescription={multi ? "carousel" : undefined} aria-label={multi ? label : undefined}>
+    <div class="gallery-track" tabindex={multi ? 0 : undefined} aria-live={multi ? "polite" : undefined}>
+      {images.map((img, i) => (
+        <figure class="gallery-slide" role={multi ? "group" : undefined} aria-roledescription={multi ? "slide" : undefined}
+          aria-label={multi ? slideLabel(i + 1) : undefined}>
+          <a href={img.src.src} target="_blank" rel="noopener" title={t("gallery.full")}>
+            <Image src={img.src} alt={img.alt} width={820} widths={[820, 1640]} sizes="(max-width: 900px) 100vw, 820px"
+              loading={i === 0 ? "eager" : "lazy"} />
+          </a>
+        </figure>
+      ))}
+    </div>
+    {multi && (
+      <div class="gallery-nav" hidden>
+        <div class="gallery-ctl">
+          <button type="button" class="gallery-btn gallery-play" data-label-pause={t("gallery.pause")} data-label-play={t("gallery.play")}
+            aria-label={t("gallery.pause")}><span class="i-pause" aria-hidden="true"></span><span class="i-play" aria-hidden="true"></span></button>
+          <button type="button" class="gallery-btn" data-dir="-1" aria-label={t("gallery.prev")}>←</button>
+        </div>
+        <div class="gallery-dots">
+          {images.map((_, i) => (
+            <button type="button" class="gallery-dot" data-i={i} aria-label={slideLabel(i + 1)} aria-current={i === 0 ? "true" : undefined}></button>
+          ))}
+        </div>
+        <button type="button" class="gallery-btn" data-dir="1" aria-label={t("gallery.next")}>→</button>
+      </div>
+    )}
+  </div>
+)}
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>("[data-gallery]")) {
+    const track = root.querySelector<HTMLElement>(".gallery-track")!;
+    const slides = [...track.children] as HTMLElement[];
+    const dots = [...root.querySelectorAll<HTMLButtonElement>(".gallery-dot")];
+    const prev = root.querySelector<HTMLButtonElement>('[data-dir="-1"]')!;
+    const next = root.querySelector<HTMLButtonElement>('[data-dir="1"]')!;
+    const play = root.querySelector<HTMLButtonElement>(".gallery-play")!;
+    const interval = Number(root.dataset.interval) || 5000;
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    root.querySelector<HTMLElement>(".gallery-nav")!.hidden = false;
+
+    let active = 0;
+    const setActive = (i: number) => {
+      active = i;
+      dots.forEach((d, j) => (j === i ? d.setAttribute("aria-current", "true") : d.removeAttribute("aria-current")));
+      prev.disabled = i === 0;
+      next.disabled = i === slides.length - 1;
+    };
+    // Buttons and keys update the controls at once; the scroll animation follows.
+    const go = (i: number) => {
+      const target = Math.max(0, Math.min(slides.length - 1, i));
+      setActive(target);
+      track.scrollTo({ left: target * track.clientWidth, behavior: reducedMotion ? "auto" : "smooth" });
+    };
+
+    // ---- autoplay -------------------------------------------------------------------
+    let playing = !reducedMotion; // the visitor's choice, via the pause/play button
+    let hovered = false;
+    let keyboardFocus = false;
+    let timer = 0;
+    const schedule = () => {
+      clearTimeout(timer);
+      const running = playing && !hovered && !keyboardFocus && !document.hidden;
+      // Screen readers announce slide changes only when the visitor drives them.
+      track.setAttribute("aria-live", running ? "off" : "polite");
+      if (running) timer = window.setTimeout(() => { go((active + 1) % slides.length); schedule(); }, interval);
+    };
+    const setPlaying = (on: boolean) => {
+      playing = on;
+      root.classList.toggle("is-paused", !on);
+      play.setAttribute("aria-label", (on ? play.dataset.labelPause : play.dataset.labelPlay) ?? "");
+      schedule();
+    };
+
+    // A manual move restarts the countdown, so the carousel never jumps right after it.
+    const byHand = (i: number) => { go(i); schedule(); };
+    prev.addEventListener("click", () => byHand(active - 1));
+    next.addEventListener("click", () => byHand(active + 1));
+    dots.forEach((d, j) => d.addEventListener("click", () => byHand(j)));
+    play.addEventListener("click", () => setPlaying(!playing));
+    track.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") { e.preventDefault(); byHand(active - 1); }
+      if (e.key === "ArrowRight") { e.preventDefault(); byHand(active + 1); }
+    });
+    for (const ev of ["pointerdown", "wheel"]) track.addEventListener(ev, schedule, { passive: true });
+
+    root.addEventListener("mouseenter", () => { hovered = true; schedule(); });
+    root.addEventListener("mouseleave", () => { hovered = false; schedule(); });
+    // Pause for keyboard focus only: a mouse click also focuses the button it hits.
+    root.addEventListener("focusin", (e) => { keyboardFocus = (e.target as Element).matches(":focus-visible"); schedule(); });
+    root.addEventListener("focusout", (e) => {
+      if (!root.contains(e.relatedTarget as Node | null)) { keyboardFocus = false; schedule(); }
+    });
+    document.addEventListener("visibilitychange", schedule);
+
+    // After a swipe (or any scroll) settles, follow the slide that ended up in view.
+    let settle = 0;
+    track.addEventListener("scroll", () => {
+      clearTimeout(settle);
+      settle = window.setTimeout(() => setActive(Math.round(track.scrollLeft / track.clientWidth)), 150);
+    }, { passive: true });
+
+    setActive(0);
+    setPlaying(playing);
+  }
+</script>

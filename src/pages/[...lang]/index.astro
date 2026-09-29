@@ -1,0 +1,98 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProjectItem from "../../components/ProjectItem.astro";
+import { getProjects } from "../../lib/projects";
+import { langPaths, useT } from "../../i18n/utils";
+import { site, copy, type Lang } from "../../../content/site";
+
+export const getStaticPaths = langPaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const t = useT(lang);
+const c = copy[lang];
+const projects = await getProjects(lang);
+const mailto = `mailto:${site.email}`;
+---
+<Base lang={lang}>
+  <div class="container layout">
+    <main>
+      <section class="hero" aria-label={site.name}>
+        <h1 lang="en"><span class="ty">yourIdea</span>.<wbr />design().<wbr />build().<wbr />run();<span class="caret" aria-hidden="true"></span></h1>
+        <p>{c.hero.text}</p>
+        <div class="row">
+          <a class="btn" href="#contact">{c.hero.primary}</a>
+          <a class="btn ghost" href="#projects">{c.hero.secondary}</a>
+        </div>
+      </section>
+
+      <section id="services" aria-labelledby="services-t">
+        <h2 class="sec-title" id="services-t">{t("services.title")}</h2>
+        <div class="svc">
+          {c.services.map((s) => (
+            <div>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+              <p class="svc-tags">{s.tags.join(" · ")}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="projects" aria-labelledby="projects-t">
+        <h2 class="sec-title" id="projects-t">{t("projects.title")} <span class="count">{projects.length}</span></h2>
+        <div class="feed">
+          {projects.length ? projects.map((p) => <ProjectItem project={p} lang={lang} />) : <p class="empty">{t("projects.empty")}</p>}
+        </div>
+      </section>
+
+      <section id="approach" aria-labelledby="approach-t">
+        <h2 class="sec-title" id="approach-t">{t("approach.title")}</h2>
+        <p class="sec-intro">{c.approach.intro}</p>
+        <ol class="steps">
+          {c.approach.steps.map((s, i) => (
+            <li><span class="step-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><h3>{s.title}</h3><p>{s.text}</p></li>
+          ))}
+        </ol>
+      </section>
+
+      <section id="principles" aria-labelledby="principles-t">
+        <h2 class="sec-title" id="principles-t">{t("principles.title")}</h2>
+        <ul class="principles">
+          {c.principles.map((p) => <li><h3>{p.title}</h3><p>{p.text}</p></li>)}
+        </ul>
+      </section>
+    </main>
+
+    <aside class="side">
+      <section class="box" id="about" aria-labelledby="about-t">
+        <h2 id="about-t">{t("about.title")}</h2>
+        <p>{c.about}</p>
+      </section>
+      <section class="box" aria-labelledby="tech-t">
+        <h2 id="tech-t">{t("tech.title")}</h2>
+        <ul class="chips">{site.technologies.map((s) => <li>{s}</li>)}</ul>
+      </section>
+      <section class="box" aria-labelledby="side-contact-t">
+        <h2 id="side-contact-t">{t("contact.title")}</h2>
+        <p>{c.contactText}</p>
+        <p><a class="mail" href={mailto}>{site.email}</a></p>
+      </section>
+    </aside>
+  </div>
+
+  <section class="container" id="contact" aria-labelledby="contact-t">
+    <div class="contact">
+      <div>
+        <h2 id="contact-t">{c.contact.title}</h2>
+        <p>{c.contact.text}</p>
+        <div class="row">
+          <a class="btn" href={mailto}>{t("contact.write")}</a>
+          <a class="mail" href={mailto}>{site.email}</a>
+        </div>
+      </div>
+      <ol class="contact-steps">
+        {c.contact.steps.map((s) => <li>{s}</li>)}
+      </ol>
+    </div>
+  </section>
+</Base>

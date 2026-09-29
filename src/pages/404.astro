@@ -1,0 +1,19 @@
+---
+// One 404 page for every language (nginx serves /404.html for any missing path).
+import Base from "../layouts/Base.astro";
+---
+<Base lang="en" title="404" noAlternates>
+  <div class="container layout">
+    <main class="hero">
+      <h1><span class="kw">throw new</span> <span class="ty">NotFoundException</span>(<span class="str">"404"</span>);</h1>
+      <p>This page does not exist, or it has moved.</p>
+      <p lang="es">Esta página no existe o se ha movido.</p>
+      <p lang="it">Questa pagina non esiste o è stata spostata.</p>
+      <div class="row">
+        <a class="btn" href="/">Home</a>
+        <a class="btn ghost" href="/es/" lang="es">Inicio</a>
+        <a class="btn ghost" href="/it/" lang="it">Pagina iniziale</a>
+      </div>
+    </main>
+  </div>
+</Base>

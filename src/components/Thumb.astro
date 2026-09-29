@@ -1,0 +1,19 @@
+---
+// The project's first image, or a generated tile (gradient + glyph) when it has none.
+import { Image } from "astro:assets";
+import { tileColors, type Project } from "../lib/projects";
+
+interface Props { project: Project; width: number; ratio?: string; eager?: boolean; class?: string }
+const { project, width, ratio = "1", eager = false, class: cls } = Astro.props;
+const { color, glyph, title } = project.data;
+const first = project.gallery[0];
+const [c1, c2] = tileColors[color];
+---
+{first ? (
+  <Image class:list={["thumb", cls]} src={first.src} alt={first.alt} width={width} style={`aspect-ratio:${ratio}`}
+    widths={[width, width * 2]} sizes={`${width}px`} loading={eager ? "eager" : "lazy"} />
+) : (
+  <div class:list={["thumb", "tile", cls]} style={`aspect-ratio:${ratio};background:linear-gradient(135deg,${c1},${c2})`} aria-hidden="true">
+    <span>{glyph ?? title.slice(0, 2)}</span>
+  </div>
+)}

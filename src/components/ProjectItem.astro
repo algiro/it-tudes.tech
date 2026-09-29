@@ -1,0 +1,29 @@
+---
+import Thumb from "./Thumb.astro";
+import { projectHref, hashtag, type Project } from "../lib/projects";
+import { localePath, useT } from "../i18n/utils";
+import type { Lang } from "../../content/site";
+
+interface Props { project: Project; lang: Lang }
+const { project, lang } = Astro.props;
+const t = useT(lang);
+const { title, summary, kind, year, tags, external, draft } = project.data;
+const href = projectHref(project, (p) => localePath(lang, p));
+---
+<article class="post" lang={project.lang !== lang ? project.lang : undefined}>
+  <div class="post-text">
+    <div class="meta">
+      {draft && <span class="badge draft">{t("draft")}</span>}
+      {kind && <span class="badge">{kind}</span>}
+      {year && <span>{year}</span>}
+    </div>
+    <h3>
+      <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener" : undefined}>
+        {title}{external && <span class="ext" aria-label={t("external")}> ↗</span>}
+      </a>
+    </h3>
+    <p>{summary}</p>
+    {tags.length > 0 && <div class="tags">{tags.map((tag) => <span>{hashtag(tag)}</span>)}</div>}
+  </div>
+  <Thumb project={project} width={150} />
+</article>
