@@ -1,0 +1,68 @@
+---
+// An editor that types code forever (see live-editor/engine.ts and content/editor/).
+// The first snippet is rendered here, still, at build time: that is what visitors see
+// without JavaScript or with "reduce motion" on. The script then takes over.
+import { parseSnippet } from "./live-editor/engine";
+import { lineHtml, langInfo } from "./live-editor/highlight";
+
+interface Props { label: string; first?: string }
+const { label, first = "OrderEndpoints.cs" } = Astro.props;
+
+const raw = import.meta.glob(["../../content/editor/*", "!../../content/editor/*.md"], { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+const snippets = Object.entries(raw).map(([p, s]) => parseSnippet(p, s));
+const still = snippets.find((s) => s.file === first) ?? snippets[0];
+const lines = still.text.replace(/\n$/, "").split("\n");
+const info = langInfo[still.lang];
+---
+<div class="ed" data-live-editor data-first={still.file} role="img" aria-label={label}>
+  <div class="ed-bar" aria-hidden="true">
+    <span class="ed-dots"><i></i><i></i><i></i></span>
+    <span class="ed-title">~/src · it-tudes</span>
+  </div>
+  <div class="ed-tabs" aria-hidden="true">
+    <span class="tab on"><span class={`badge b-${still.lang}`}>{info.badge}</span>{still.file}</span>
+  </div>
+  <div class="ed-view" aria-hidden="true">
+    <div class="ed-content">
+      <div class="ed-lines">
+        {lines.map((l, i) => (
+          <div class="ln"><span class="no">{i + 1}</span><span class="code" set:html={lineHtml(l, still.lang)} /></div>
+        ))}
+      </div>
+      <div class="ed-popup" hidden></div>
+    </div>
+  </div>
+  <div class="ed-status" aria-hidden="true">
+    <span>⎇ main</span>
+    <span class="ed-msg"></span>
+    <span class="ed-gap"></span>
+    <span class="ed-pos">Ln 1, Col 1</span>
+    <span class="ed-indent opt">{info.indent}</span>
+    <span class="opt">UTF-8</span>
+    <span class="opt">LF</span>
+    <span class="ed-lang">{info.name}</span>
+  </div>
+</div>
+
+<script>
+  import { LiveEditor, parseSnippet } from "./live-editor/engine";
+
+  const raw = import.meta.glob(["../../content/editor/*", "!../../content/editor/*.md"], { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+  const snippets = Object.entries(raw).map(([p, s]) => parseSnippet(p, s));
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-live-editor]")) {
+    // Reduced motion: keep the still version rendered at build time.
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) continue;
+    const editor = new LiveEditor(root, snippets);
+    let started = false;
+    let visible = false;
+    // Types only while at least a fifth of it is on screen and the tab is visible.
+    const update = () => editor.setRunning(visible && !document.hidden);
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && !started) { started = true; editor.start(root.dataset.first); }
+      update();
+    }, { threshold: 0.2 }).observe(root);
+    document.addEventListener("visibilitychange", update);
+  }
+</script>

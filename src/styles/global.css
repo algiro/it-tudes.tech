@@ -76,6 +76,40 @@ h1, h2, h3 { text-wrap: balance; }
 .svc .svc-tags { flex: 0; margin-top: 12px; font: 400 12px var(--mono); color: var(--mute); }
 .sec-intro { margin: -6px 0 18px; color: var(--soft); max-width: 62ch; }
 
+/* ---------- live editor (src/components/LiveEditor.astro) ---------- */
+/* Global, not scoped: the engine writes these elements with innerHTML. */
+.ed { --ed-lh: 20px; --ed-rows: 20; background: #0B101B; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font: 400 13px/var(--ed-lh) var(--mono); box-shadow: 0 24px 48px -28px rgba(0,0,0,.7); }
+.ed-bar { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: #0E1422; border-bottom: 1px solid var(--line); color: var(--mute); font-size: 12px; }
+.ed-dots { display: flex; gap: 6px; }
+.ed-dots i { width: 10px; height: 10px; border-radius: 50%; background: #2A3447; }
+.ed-tabs { display: flex; overflow: hidden; background: #0E1422; border-bottom: 1px solid var(--line); min-height: 34px; }
+.ed .tab { display: flex; align-items: center; gap: 7px; padding: 7px 14px; font-size: 12.5px; color: var(--mute); border-right: 1px solid var(--line); white-space: nowrap; }
+.ed .tab.on { background: #0B101B; color: var(--ink); box-shadow: inset 0 2px 0 var(--orange); }
+.ed .badge { font: 700 9px/1 var(--sans); padding: 3px 4px; border-radius: 3px; color: #0B101B; letter-spacing: .02em; }
+.b-csharp { background: #C4A5FF; } .b-ts { background: #60A5FA; } .b-sql { background: #FDBA74; } .b-docker { background: #7DD3FC; } .b-yaml { background: #FCA5A5; }
+.ed .dirty { color: var(--mute); font-size: 10px; margin-left: 2px; }
+.ed-view { height: calc(var(--ed-rows) * var(--ed-lh)); overflow: hidden; scroll-behavior: smooth; }
+/* Space after the last line (like an editor's "scroll beyond last line"), so the
+   autocomplete list fits under the cursor without the view jumping. At least RESERVE in engine.ts. */
+.ed-content { position: relative; min-width: max-content; padding-block: 6px 150px; }
+.ed .ln { display: flex; white-space: pre; padding-right: 24px; }
+.ed .ln.cur { background: rgba(255, 255, 255, .045); }
+.ed .no { position: sticky; left: 0; flex: none; width: 3.2em; padding-right: 1.2em; text-align: right; color: #3C4659; background: #0B101B; user-select: none; }
+.ed .ln.cur .no { color: #8E98AB; background: #11172A; }
+.ed .code { color: #D4DAE4; }
+.ed .caret { display: inline-block; width: 2px; height: calc(var(--ed-lh) - 4px); margin-right: -2px; vertical-align: -3px; background: var(--orange); animation: blink 1.06s steps(1) infinite; }
+.ed .tk { color: #C4A5FF; } .ed .ty { color: #5EEAD4; } .ed .tf { color: #FDE68A; } .ed .ts { color: #86EFAC; }
+.ed .tn { color: #FDBA74; } .ed .tm { color: #6B778C; font-style: italic; } .ed .tp { color: #93C5FD; } .ed .tx { color: #F9A8D4; }
+.ed-popup { position: absolute; z-index: 2; min-width: 220px; margin-left: -4px; padding: 3px; background: #1A2233; border: 1px solid #2E3A52; border-radius: 6px; box-shadow: 0 10px 24px rgba(0,0,0,.5); font-size: 12px; }
+.ed-popup[hidden] { display: none; }
+.ed .ac { display: flex; align-items: center; gap: 8px; padding: 2px 8px; border-radius: 3px; color: #C9D1DE; line-height: 20px; }
+.ed .ac.sel { background: #24406B; color: #fff; }
+.ed .ac-i { width: 14px; text-align: center; color: #C4A5FF; }
+.ed-status { display: flex; align-items: center; gap: 14px; padding: 4px 12px; background: #13305C; color: #C9D8F0; font: 400 11.5px/1.6 var(--sans); white-space: nowrap; overflow: hidden; }
+.ed-gap { flex: 1; }
+.ed-msg { color: #86EFAC; }
+.editor-sec p.sec-intro { margin-bottom: 18px; }
+
 /* ---------- approach: a real sequence, so it is numbered ---------- */
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); }
 .steps li { padding: 16px 16px 4px 0; position: relative; }
@@ -193,6 +227,8 @@ h1, h2, h3 { text-wrap: balance; }
   .steps li, .steps li + li { padding: 14px 0 10px; border-left: 0; }
   .steps li + li { border-top: 1px solid var(--line); }
   .contact { padding: 22px 18px; }
+  .ed { --ed-lh: 18px; --ed-rows: 15; font-size: 11.5px; }
+  .ed-status .opt, .ed-title { display: none; }
   .post { grid-template-columns: minmax(0, 1fr) 84px; gap: 16px; }
   .post h3 { font-size: 18px; }
   html { scroll-padding-top: 110px; }

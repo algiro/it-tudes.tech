@@ -12,7 +12,7 @@ export const site = {
   email: "hello@it-tudes.tech", // TODO: confirm the public contact address
   // Shown in the footer when set (required on Italian company websites).
   legalName: "",
-  vatId: "",
+  vatId: "Y5825223G",
   // "Technologies" box. TODO: keep only what you want to be hired for.
   technologies: [".NET", "C#", "Java", "TypeScript", "React", "Vue", "PostgreSQL", "SQL Server", "Docker", "Linux", "gRPC", "FIX"],
 };
@@ -25,6 +25,8 @@ interface Copy {
   services: (Item & { tags: string[] })[];
   approach: { intro: string; steps: Item[] };
   principles: Item[];
+  /** The live code editor section (home page) */
+  editor: { title: string; text: string; alt: string };
   about: string;
   contact: { title: string; text: string; steps: string[] };
   /** Short line in the side boxes */
@@ -64,6 +66,11 @@ export const copy: Record<Lang, Copy> = {
       { title: "Integrate, don't replace", text: "We extend and connect what already works instead of starting from zero." },
       { title: "Technology follows the problem", text: "We pick tools for your context, not for our habits." },
     ],
+    editor: {
+      title: "Meanwhile, in our editor",
+      text: "Real patterns, steady rhythm, keep coding!",
+      alt: "Animation: an editor typing C# code, fixing a typo now and then",
+    },
     about:
       "it-tudes is a software engineering company. We take systems from the first idea to production, and we stay to run them.",
     contact: {
@@ -109,6 +116,11 @@ export const copy: Record<Lang, Copy> = {
       { title: "Integrar, no sustituir", text: "Ampliamos y conectamos lo que ya funciona en lugar de empezar de cero." },
       { title: "La tecnología sigue al problema", text: "Elegimos las herramientas según tu contexto, no según nuestras costumbres." },
     ],
+    editor: {
+      title: "Mientras tanto, en nuestro editor",
+      text: "Patrones reales, ritmo constante y sigue programando!",
+      alt: "Animación: un editor escribiendo código C# y corrigiendo alguna errata",
+    },
     about:
       "it-tudes es una empresa de ingeniería de software. Llevamos cada sistema desde la primera idea hasta producción, y nos quedamos para mantenerlo en marcha.",
     contact: {
@@ -154,6 +166,11 @@ export const copy: Record<Lang, Copy> = {
       { title: "Integrare, non sostituire", text: "Estendiamo e colleghiamo ciò che già funziona invece di ripartire da zero." },
       { title: "La tecnologia segue il problema", text: "Scegliamo gli strumenti in base al tuo contesto, non alle nostre abitudini." },
     ],
+    editor: {
+      title: "Nel frattempo, nel nostro editor",
+      text: "Pattern reali, ritmo costante e continua a programmare!",
+      alt: "Animazione: un editor che scrive codice C# e corregge qualche refuso",
+    },
     about:
       "it-tudes è una società di ingegneria del software. Portiamo ogni sistema dalla prima idea alla produzione, e restiamo a gestirlo.",
     contact: {

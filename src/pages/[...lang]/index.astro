@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import ProjectItem from "../../components/ProjectItem.astro";
+import LiveEditor from "../../components/LiveEditor.astro";
 import { getProjects } from "../../lib/projects";
 import { langPaths, useT } from "../../i18n/utils";
 import { site, copy, type Lang } from "../../../content/site";
@@ -36,6 +37,12 @@ const mailto = `mailto:${site.email}`;
             </div>
           ))}
         </div>
+      </section>
+
+      <section id="editor" class="editor-sec" aria-labelledby="editor-t">
+        <h2 class="sec-title" id="editor-t">{c.editor.title}</h2>
+        <p class="sec-intro">{c.editor.text}</p>
+        <LiveEditor label={c.editor.alt} />
       </section>
 
       <section id="projects" aria-labelledby="projects-t">
